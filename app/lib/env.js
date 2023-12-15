@@ -1,6 +1,5 @@
 /**
  * @description 环境变量
- * @author 梁凤波
  */
 
 const ENV = process.env.NODE_ENV

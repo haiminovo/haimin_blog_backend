@@ -1,6 +1,5 @@
 /**
  * @description 用户的路由 API 接口
- * @author 梁凤波, Peter Liang
  */
 
 const Router = require('koa-router')
