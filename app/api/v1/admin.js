@@ -48,14 +48,14 @@ router.post('/register', async (ctx) => {
 router.post('/login', async (ctx) => {
   const v = await new AdminLoginValidator().validate(ctx);
 
-  const [err, token] = await LoginManager.adminLogin({
+  const [err, token,id] = await LoginManager.adminLogin({
     email: v.get('body.email'),
     password: v.get('body.password')
   })
 
   if (!err) {
     ctx.response.status = 200;
-    ctx.body = res.json({ token });
+    ctx.body = res.json({ token,id });
   } else {
     ctx.body = res.fail(err, err.msg);
   }

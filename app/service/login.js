@@ -11,7 +11,7 @@ class LoginManager {
     // 验证账号密码是否正确
     const [err, admin] = await AdminDao.verify(email, password);
     if (!err) {
-      return [null, generateToken(admin.id, Auth.ADMIN)]
+      return [null,generateToken(admin.id, Auth.ADMIN), admin.id]
     } else {
       return [err, null]
     }
