@@ -52,13 +52,16 @@ router.post('/login', async (ctx) => {
     email: v.get('body.email'),
     password: v.get('body.password')
   })
-
   if (!err) {
-    ctx.response.status = 200;
-    ctx.body = res.json({ token,id });
-  } else {
-    ctx.body = res.fail(err, err.msg);
-  }
+    let [err, data] = await AdminDao.detail(id);
+    if (!err) {
+        data.setDataValue('token', token)
+        ctx.response.status = 200;
+        ctx.body = res.json(data);
+    }
+    } else {
+        ctx.body = res.fail(err, err.msg);
+    }
 });
 
 // 获取用户信息
