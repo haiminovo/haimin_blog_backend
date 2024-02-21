@@ -28,6 +28,11 @@ class LoginManager {
       return [err, null]
     }
   }
+
+  static async refreshToken(id,role,preToken){
+    
+    return [null,generateToken(id,role),id]
+  }
 }
 
 module.exports = {

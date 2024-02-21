@@ -1,17 +1,18 @@
 class Resolve {
-  fail(err = {}, msg = '操作失败', errorCode = 10001) {
+  fail(err = {}, msg = '操作失败', code,errorCode = 10001) {
     return {
+      code,
       msg,
       err,
-      errorCode
+      errorCode,
     }
   }
 
   success(msg = 'success', errorCode = 0, code = 200) {
     return {
-      msg,
       code,
-      errorCode
+      msg,
+      errorCode,
     }
   }
 
@@ -19,8 +20,8 @@ class Resolve {
     return {
       code,
       msg,
+      data,
       errorCode,
-      data
     }
   }
 }
