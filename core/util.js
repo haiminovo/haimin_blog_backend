@@ -1,58 +1,75 @@
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
 /***
  *
  */
-const findMembers = function (instance, {
-  prefix,
-  specifiedType,
-  filter
-}) {
-  // 递归函数
-  function _find(instance) {
-    //基线条件（跳出递归）
-    if (instance.__proto__ === null)
-      return []
+const findMembers = function (instance, { prefix, specifiedType, filter }) {
+    // 递归函数
+    function _find(instance) {
+        //基线条件（跳出递归）
+        if (instance.__proto__ === null) return [];
 
-    let names = Reflect.ownKeys(instance)
-    names = names.filter((name) => {
-      // 过滤掉不满足条件的属性或方法名
-      return _shouldKeep(name)
-    })
+        let names = Reflect.ownKeys(instance);
+        names = names.filter((name) => {
+            // 过滤掉不满足条件的属性或方法名
+            return _shouldKeep(name);
+        });
 
-    return [...names, ..._find(instance.__proto__)]
-  }
-
-  function _shouldKeep(value) {
-    if (filter) {
-      if (filter(value)) {
-        return true
-      }
+        return [...names, ..._find(instance.__proto__)];
     }
-    if (prefix)
-      if (value.startsWith(prefix))
-        return true
-    if (specifiedType)
-      if (instance[value] instanceof specifiedType)
-        return true
-  }
 
-  return _find(instance)
-}
+    function _shouldKeep(value) {
+        if (filter) {
+            if (filter(value)) {
+                return true;
+            }
+        }
+        if (prefix) if (value.startsWith(prefix)) return true;
+        if (specifiedType) if (instance[value] instanceof specifiedType) return true;
+    }
+
+    return _find(instance);
+};
 
 // 颁布令牌
 const generateToken = function (uid, scope) {
-  const secretKey = global.config.security.secretKey;
-  const expiresIn = global.config.security.expiresIn;
-  const token = jwt.sign({
-    uid,
-    scope
-  }, secretKey, {
-    expiresIn: expiresIn
-  })
-  return token
-}
+    const secretKey = global.config.security.secretKey;
+    const expiresIn = global.config.security.expiresIn;
+    const token = jwt.sign(
+        {
+            uid,
+            scope,
+        },
+        secretKey,
+        {
+            expiresIn: expiresIn,
+        }
+    );
+    return token;
+};
+
+// 刷新令牌
+const refreshToken = function (uid, scope, token) {
+    const secretKey = global.config.security.secretKey;
+    if (!token || !token.name) {
+        throw new global.errs.ParameterException('需要携带token值');
+    }
+    try {
+        const verifyToken = token.name.split(' ')[1];
+        console.log(verifyToken);
+        jwt.verify(verifyToken, secretKey);
+    } catch (error) {
+        // token 不合法 过期
+        if (error.name === 'TokenExpiredError') {
+            const newToken = generateToken(uid, scope);
+            return [null, newToken];
+        } else {
+            throw new global.errs.ParameterException('token未过期');
+        }
+    }
+};
 
 module.exports = {
-  findMembers,
-  generateToken,
-}
+    findMembers,
+    generateToken,
+    refreshToken,
+};

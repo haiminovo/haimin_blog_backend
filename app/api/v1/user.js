@@ -2,13 +2,15 @@
  * @description 用户的路由 API 接口
  */
 
-const Router = require('koa-router')
+const Router = require('koa-router');
+const basicAuth = require('basic-auth');
 
 const {
     RegisterValidator,
     PositiveIdParamsValidator,
-    UserLoginValidator
-} = require('@validators/user')
+    UserLoginValidator,
+    refreshTokenValidator,
+} = require('@validators/user');
 
 const { UserDao } = require('@dao/user');
 const { Auth } = require('@middlewares/auth');
@@ -20,8 +22,8 @@ const AUTH_USER = 8;
 const AUTH_ADMIN = 16;
 
 const router = new Router({
-    prefix: '/api/v1/user'
-})
+    prefix: '/api/v1/user',
+});
 
 // 用户注册
 router.post('/register', async (ctx) => {
@@ -34,47 +36,63 @@ router.post('/register', async (ctx) => {
     const [err, data] = await UserDao.create({
         password,
         email,
-        username: v.get('body.username')
+        username: v.get('body.username'),
     });
 
     if (!err) {
         const [errToken, token, id] = await LoginManager.userLogin({
             email,
-            password
+            password,
         });
         if (!errToken) {
-            data.token = token
-            data.id = id
+            data.token = token;
+            data.id = id;
         }
         // 返回结果
         ctx.response.status = 200;
         ctx.body = res.json(data);
-
     } else {
-        ctx.body = res.fail(err)
+        ctx.body = res.fail(err);
     }
+});
 
-})
-
-// 管理登录
+// 用户登录
 router.post('/login', async (ctx) => {
-
     const v = await new UserLoginValidator().validate(ctx);
 
     let [err, token, id] = await LoginManager.userLogin({
         email: v.get('body.email'),
-        password: v.get('body.password')
+        password: v.get('body.password'),
     });
 
     if (!err) {
         let [err, data] = await UserDao.detail(id);
         if (!err) {
-            data.setDataValue('token', token)
+            data.setDataValue('token', token);
             ctx.response.status = 200;
             ctx.body = res.json(data);
         }
     } else {
         ctx.body = res.fail(err, err.msg);
+    }
+});
+
+// token过期刷新
+router.post('/refresh', async (ctx) => {
+    const tokenToken = basicAuth(ctx.req);
+    const v = await new refreshTokenValidator().validate(ctx);
+    let [err, newToken] = await LoginManager.refreshToken({
+        uid: v.get('body.id'),
+        role: v.get('body.role'),
+        token: tokenToken,
+    });
+    if (!err) {
+        const data = {};
+        data.token = newToken;
+        ctx.response.status = 200;
+        ctx.body = res.json(data);
+    } else {
+        ctx.body = res.fail(res, res.msg);
     }
 });
 
@@ -87,12 +105,12 @@ router.get('/auth', new Auth(AUTH_USER).m, async (ctx) => {
     let [err, data] = await UserDao.detail(id, 1);
     if (!err) {
         ctx.response.status = 200;
-        ctx.body = res.json(data)
+        ctx.body = res.json(data);
     } else {
         ctx.response.status = 401;
-        ctx.body = res.fail(err, err.msg)
+        ctx.body = res.fail(err, err.msg);
     }
-})
+});
 
 // 获取用户列表
 // 需要管理员及以上才能操作
@@ -101,12 +119,11 @@ router.get('/list', new Auth(AUTH_ADMIN).m, async (ctx) => {
     let [err, data] = await UserDao.list(ctx.query);
     if (!err) {
         ctx.response.status = 200;
-        ctx.body = res.json(data)
+        ctx.body = res.json(data);
     } else {
-        ctx.body = res.fail(err)
+        ctx.body = res.fail(err);
     }
-})
-
+});
 
 // 获取用户信息
 // 需要管理员及以上才能操作
@@ -118,12 +135,11 @@ router.get('/detail/:id', new Auth(AUTH_USER).m, async (ctx) => {
     let [err, data] = await UserDao.detail(id);
     if (!err) {
         ctx.response.status = 200;
-        ctx.body = res.json(data)
+        ctx.body = res.json(data);
     } else {
-        ctx.body = res.fail(err)
+        ctx.body = res.fail(err);
     }
-})
-
+});
 
 // 获取用户列表
 // 需要管理员及以上才能操作
@@ -141,7 +157,7 @@ router.delete('/delete/:id', new Auth(AUTH_ADMIN).m, async (ctx) => {
     } else {
         ctx.body = res.fail(err);
     }
-})
+});
 
 // 获取更新用户信息
 // 需要管理员及以上才能操作
@@ -159,6 +175,6 @@ router.put('/update/:id', new Auth(AUTH_ADMIN).m, async (ctx) => {
     } else {
         ctx.body = res.fail(err);
     }
-})
+});
 
-module.exports = router
+module.exports = router;
