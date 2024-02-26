@@ -4,8 +4,9 @@
  */
 
 const Router = require('koa-router');
+const basicAuth = require('basic-auth');
 
-const { RegisterValidator, AdminLoginValidator } = require('@validators/admin');
+const { RegisterValidator, AdminLoginValidator, refreshTokenValidator } = require('@validators/admin');
 
 const { AdminDao } = require('@dao/admin');
 const { Auth } = require('@middlewares/auth');
@@ -51,12 +52,32 @@ router.post('/login', async (ctx) => {
     if (!err) {
         let [err, data] = await AdminDao.detail(id);
         if (!err) {
+            data.setDataValue('isAdmin', true);
             data.setDataValue('token', token);
             ctx.response.status = 200;
             ctx.body = res.json(data);
         }
     } else {
         ctx.body = res.fail(err, err.msg);
+    }
+});
+
+// token过期刷新
+router.post('/refresh', async (ctx) => {
+    const tokenToken = basicAuth(ctx.req);
+    const v = await new refreshTokenValidator().validate(ctx);
+    let [err, newToken] = await LoginManager.refreshToken({
+        uid: v.get('body.id'),
+        role: 32,
+        token: tokenToken,
+    });
+    if (!err) {
+        const data = {};
+        data.token = newToken;
+        ctx.response.status = 200;
+        ctx.body = res.json(data);
+    } else {
+        ctx.body = res.fail(err);
     }
 });
 

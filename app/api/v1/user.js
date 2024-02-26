@@ -68,6 +68,7 @@ router.post('/login', async (ctx) => {
     if (!err) {
         let [err, data] = await UserDao.detail(id);
         if (!err) {
+            data.setDataValue('isAdmin', false);
             data.setDataValue('token', token);
             ctx.response.status = 200;
             ctx.body = res.json(data);
@@ -83,7 +84,7 @@ router.post('/refresh', async (ctx) => {
     const v = await new refreshTokenValidator().validate(ctx);
     let [err, newToken] = await LoginManager.refreshToken({
         uid: v.get('body.id'),
-        role: v.get('body.role'),
+        role: AUTH_USER,
         token: tokenToken,
     });
     if (!err) {
@@ -92,7 +93,7 @@ router.post('/refresh', async (ctx) => {
         ctx.response.status = 200;
         ctx.body = res.json(data);
     } else {
-        ctx.body = res.fail(res, res.msg);
+        ctx.body = res.fail(err);
     }
 });
 

@@ -86,7 +86,6 @@ class refreshTokenValidator extends LinValidator {
     constructor() {
         super();
         this.id = [new Rule('isLength', '不允许为空', { min: 1 })];
-        this.role = [new Rule('isLength', '不允许为空', { min: 1 })];
     }
 }
 

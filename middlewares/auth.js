@@ -17,7 +17,6 @@ class Auth {
         // HTTP 规定 身份验证机制 HttpBasicAuth
         return async (ctx, next) => {
             const tokenToken = basicAuth(ctx.req);
-
             let errMsg = '无效的token';
             // 无带token
             if (!tokenToken || !tokenToken.name) {

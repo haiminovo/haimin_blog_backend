@@ -54,16 +54,15 @@ const refreshToken = function (uid, scope, token) {
         throw new global.errs.ParameterException('需要携带token值');
     }
     try {
-        const verifyToken = token.name.split(' ')[1];
-        console.log(verifyToken);
-        jwt.verify(verifyToken, secretKey);
+        jwt.verify(token.name, secretKey);
+        return [null, token.name];
     } catch (error) {
         // token 不合法 过期
         if (error.name === 'TokenExpiredError') {
             const newToken = generateToken(uid, scope);
             return [null, newToken];
         } else {
-            throw new global.errs.ParameterException('token未过期');
+            throw new global.errs.ParameterException(error.message);
         }
     }
 };

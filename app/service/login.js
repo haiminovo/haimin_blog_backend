@@ -36,12 +36,12 @@ class LoginManager {
             16: Auth.ADMIN,
             32: Auth.SPUSER_ADMIN,
         };
+
         const [err, newToken] = refreshToken(id, authType[role], token);
         if (!err) {
             return [null, newToken];
-        } else {
-            return [err, null];
         }
+        return [err, null];
     }
 }
 
