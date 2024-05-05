@@ -162,10 +162,9 @@ router.delete('/delete/:id', new Auth(AUTH_ADMIN).m, async (ctx) => {
 
 // 获取更新用户信息
 // 需要管理员及以上才能操作
-router.put('/update/:id', new Auth(AUTH_ADMIN).m, async (ctx) => {
+router.put('/update/:id', new Auth(AUTH_USER).m, async (ctx) => {
     // 通过验证器校验参数是否通过
     const v = await new PositiveIdParamsValidator().validate(ctx);
-
     // 获取用户ID参数
     const id = v.get('path.id');
     // 删除用户

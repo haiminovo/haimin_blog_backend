@@ -21,12 +21,12 @@ Article.init({
   },
   description: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
     comment: '文章简介'
   },
   img_url: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
     comment: '文章封面图'
   },
   content: {

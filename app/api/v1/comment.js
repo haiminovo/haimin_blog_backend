@@ -102,7 +102,8 @@ router.get('/comment/:id', new Auth(AUTH_ADMIN).m, async (ctx) => {
 })
 
 // 获取关联目标下的评论列表
-router.get('/comment/target/list', async (ctx) => {
+router.post('/comment/target/list', async (ctx) => {
+  console.log(ctx.query);
   const [err, data] = await CommentDao.targetComment(ctx.query)
   if (!err) {
     // 返回结果

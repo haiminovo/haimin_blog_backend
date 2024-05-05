@@ -213,9 +213,11 @@ class CommentDao {
         desc = 'created_at'
       } = params;
 
-      // if (!article_id) {
-      //   throw new global.errs.NotFound('必须传入article id');
-      // }
+      // console.log(params);
+
+      if (!article_id) {
+        throw new global.errs.NotFound('必须传入article id');
+      }
 
       const finner = {
         status: 1,
